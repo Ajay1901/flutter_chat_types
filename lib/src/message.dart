@@ -11,16 +11,10 @@ enum Status { delivered, error, read, sending }
 
 /// An abstract class that contains all variables and methods
 /// every message will have.
-@immutable
 abstract class Message extends Equatable {
-  const Message(
-    this.authorId,
-    this.id,
-    this.metadata,
-    this.status,
-    this.timestamp,
-    this.type,
-  );
+  Message(this.authorId, this.id, this.metadata, this.status, this.timestamp,
+      this.type,
+      {this.isSelected = false});
 
   /// Creates a particular message from a map (decoded JSON).
   /// Type is determined by the `type` field.
@@ -71,6 +65,8 @@ abstract class Message extends Equatable {
 
   /// [MessageType]
   final MessageType type;
+
+  bool isSelected;
 }
 
 /// A class that represents partial file message.
@@ -119,7 +115,7 @@ class PartialFile {
 @immutable
 class FileMessage extends Message {
   /// Creates a file message.
-  const FileMessage({
+  FileMessage({
     required String authorId,
     required this.fileName,
     required String id,
@@ -129,7 +125,14 @@ class FileMessage extends Message {
     Status? status,
     int? timestamp,
     required this.uri,
-  }) : super(authorId, id, metadata, status, timestamp, MessageType.file);
+  }) : super(
+          authorId,
+          id,
+          metadata,
+          status,
+          timestamp,
+          MessageType.file,
+        );
 
   /// Creates a full file message from a partial one.
   FileMessage.fromPartial({
@@ -284,7 +287,7 @@ class PartialImage {
 @immutable
 class ImageMessage extends Message {
   /// Creates an image message.
-  const ImageMessage({
+  ImageMessage({
     required String authorId,
     this.height,
     required String id,
@@ -434,7 +437,7 @@ class PartialText {
 @immutable
 class TextMessage extends Message {
   /// Creates a text message.
-  const TextMessage({
+  TextMessage({
     required String authorId,
     required String id,
     Map<String, dynamic>? metadata,
