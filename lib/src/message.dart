@@ -4,7 +4,7 @@ import 'preview_data.dart' show PreviewData;
 import 'util.dart';
 
 /// All possible message types.
-enum MessageType { file, image, text }
+enum MessageType { file, image, text, deleted }
 
 /// All possible statuses message can have.
 enum Status { delivered, error, read, sending }
@@ -34,6 +34,8 @@ abstract class Message extends Equatable {
         return ImageMessage.fromJson(json);
       case 'text':
         return TextMessage.fromJson(json);
+      case 'deleted':
+        return DeletedMessage.fromJson(json);
       default:
         throw ArgumentError('Unexpected value for message type');
     }
@@ -521,4 +523,69 @@ class TextMessage extends Message {
 
   /// User's message
   final String text;
+}
+
+/// A class that represents a deleted message.
+
+class DeletedMessage extends Message {
+  /// Creates a deleted message.
+  const DeletedMessage({
+    required String authorId,
+    required String id,
+    Map<String, dynamic>? metadata,
+    Status? status,
+    int? timestamp,
+  }) : super(authorId, id, metadata, status, timestamp, MessageType.deleted);
+
+  /// Creates a deleted message from a map (decoded JSON).
+  DeletedMessage.fromJson(Map<String, dynamic> json)
+      : super(
+          json['authorId'] as String,
+          json['id'] as String,
+          json['metadata'] as Map<String, dynamic>?,
+          getStatusFromString(json['status'] as String?),
+          json['timestamp'] as int?,
+          MessageType.deleted,
+        );
+
+  /// Converts a deleted message to the map representation, encodable to JSON.
+  @override
+  Map<String, dynamic> toJson() => {
+        'authorId': authorId,
+        'id': id,
+        'metadata': metadata,
+        'status': status,
+        'timestamp': timestamp,
+        'type': 'deleted',
+      };
+
+  /// Equatable props
+  @override
+  List<Object?> get props => [
+        authorId,
+        id,
+        metadata,
+        status,
+        timestamp,
+      ];
+
+  @override
+  Message copyWith({
+    Map<String, dynamic>? metadata,
+    PreviewData? previewData,
+    Status? status,
+  }) { 
+    return DeletedMessage(
+      authorId: authorId,
+      id: id,
+      metadata: metadata == null
+          ? null
+          : {
+              ...this.metadata ?? {},
+              ...metadata,
+            },
+      status: status ?? this.status,
+      timestamp: timestamp,
+    );
+  }
 }
