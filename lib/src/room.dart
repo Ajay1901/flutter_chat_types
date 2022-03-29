@@ -69,4 +69,6 @@ class Room extends Equatable {
 
   /// List of users which are in the room
   final List<User> users;
+
 }
+
