@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'user.dart';
@@ -17,8 +16,6 @@ class Room extends Equatable {
     this.name,
     required this.type,
     required this.users,
-    required this.lastUpdated,
-    this.deletedFor,
   });
 
   /// Creates a copy of the room with an updated data.
@@ -33,7 +30,6 @@ class Room extends Equatable {
     String? name,
     RoomType? type,
     List<User>? users,
-    Timestamp? lastUpdated,
   }) {
     return Room(
       id: id,
@@ -47,7 +43,6 @@ class Room extends Equatable {
       name: name,
       type: type ?? this.type,
       users: users ?? this.users,
-      lastUpdated: lastUpdated ?? this.lastUpdated,
     );
   }
 
@@ -75,19 +70,5 @@ class Room extends Equatable {
   /// List of users which are in the room
   final List<User> users;
 
-  final Timestamp lastUpdated;
-
-  final List<DeltedForModel>? deletedFor;
 }
 
-class DeltedForModel {
-  DeltedForModel({
-    required this.lastMessageIdBeforeChatDeleted,
-    required this.uid,
-    required this.until,
-  });
-
-  final String lastMessageIdBeforeChatDeleted;
-  final String uid;
-  final String until;
-}
