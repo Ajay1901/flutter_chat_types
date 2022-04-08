@@ -528,20 +528,34 @@ class TextMessage extends Message {
 }
 
 /// A class that represents a deleted message.
-
+@immutable
 class DeletedMessage extends Message {
   /// Creates a deleted message.
   const DeletedMessage({
     required String authorId,
     required String id,
     Map<String, dynamic>? metadata,
+    this.previewData,
     Status? status,
     int? timestamp,
   }) : super(authorId, id, metadata, status, timestamp, MessageType.deleted);
 
+  /// Creates a full deleted message from a partial one.
+  const DeletedMessage.fromPartial({
+    required String authorId,
+    required String id,
+    Map<String, dynamic>? metadata,
+    Status? status,
+    int? timestamp,
+  })  : previewData = null,
+        super(authorId, id, metadata, status, timestamp, MessageType.deleted);
+
   /// Creates a deleted message from a map (decoded JSON).
   DeletedMessage.fromJson(Map<String, dynamic> json)
-      : super(
+      : previewData = json['previewData'] == null
+            ? null
+            : PreviewData.fromJson(json['previewData'] as Map<String, dynamic>),
+        super(
           json['authorId'] as String,
           json['id'] as String,
           json['metadata'] as Map<String, dynamic>?,
@@ -556,27 +570,23 @@ class DeletedMessage extends Message {
         'authorId': authorId,
         'id': id,
         'metadata': metadata,
+        'previewData': previewData?.toJson(),
         'status': status,
         'timestamp': timestamp,
         'type': 'deleted',
       };
 
-  /// Equatable props
-  @override
-  List<Object?> get props => [
-        authorId,
-        id,
-        metadata,
-        status,
-        timestamp,
-      ];
-
+  /// Creates a copy of the deleted message with an updated data
+  /// [metadata] with null value will nullify existing metadata, otherwise
+  /// both metadatas will be merged into one Map, where keys from a passed
+  /// metadata will overwite keys from the previous one.
+  /// [status] with null value will be overwritten by the previous status.
   @override
   Message copyWith({
     Map<String, dynamic>? metadata,
     PreviewData? previewData,
     Status? status,
-  }) { 
+  }) {
     return DeletedMessage(
       authorId: authorId,
       id: id,
@@ -586,10 +596,20 @@ class DeletedMessage extends Message {
               ...this.metadata ?? {},
               ...metadata,
             },
+      previewData: previewData,
       status: status ?? this.status,
       timestamp: timestamp,
     );
   }
+
+  /// Equatable props
+  @override
+  List<Object?> get props =>
+      [authorId, id, metadata, previewData, status, timestamp];
+
+  /// See [PreviewData]
+  final PreviewData? previewData;
+
 }
 
 /// A class that represents a group exit message.
