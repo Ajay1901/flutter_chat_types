@@ -4,7 +4,7 @@ import 'preview_data.dart' show PreviewData;
 import 'util.dart';
 
 /// All possible message types.
-enum MessageType { file, image, text, deleted }
+enum MessageType { file, image, text, deleted, groupExit}
 
 /// All possible statuses message can have.
 enum Status { delivered, error, read, sending }
@@ -36,6 +36,8 @@ abstract class Message extends Equatable {
         return TextMessage.fromJson(json);
       case 'deleted':
         return DeletedMessage.fromJson(json);
+      case 'groupExit':
+        return GroupExitMessage.fromJson(json);
       default:
         throw ArgumentError('Unexpected value for message type');
     }
@@ -576,6 +578,71 @@ class DeletedMessage extends Message {
     Status? status,
   }) { 
     return DeletedMessage(
+      authorId: authorId,
+      id: id,
+      metadata: metadata == null
+          ? null
+          : {
+              ...this.metadata ?? {},
+              ...metadata,
+            },
+      status: status ?? this.status,
+      timestamp: timestamp,
+    );
+  }
+}
+
+/// A class that represents a group exit message.
+
+class GroupExitMessage extends Message {
+  /// Creates a group exit message.
+  const GroupExitMessage({
+    required String authorId,
+    required String id,
+    Map<String, dynamic>? metadata,
+    Status? status,
+    int? timestamp,
+  }) : super(authorId, id, metadata, status, timestamp, MessageType.groupExit);
+
+  /// Creates a group exit message from a map (decoded JSON).
+  GroupExitMessage.fromJson(Map<String, dynamic> json)
+      : super(
+          json['authorId'] as String,
+          json['id'] as String,
+          json['metadata'] as Map<String, dynamic>?,
+          getStatusFromString(json['status'] as String?),
+          json['timestamp'] as int?,
+          MessageType.groupExit,
+        );
+
+  /// Converts a group exit message to the map representation, encodable to JSON.
+  @override
+  Map<String, dynamic> toJson() => {
+        'authorId': authorId,
+        'id': id,
+        'metadata': metadata,
+        'status': status,
+        'timestamp': timestamp,
+        'type': 'groupExit',
+      };
+
+  /// Equatable props
+  @override
+  List<Object?> get props => [
+        authorId,
+        id,
+        metadata,
+        status,
+        timestamp,
+      ];
+
+  @override
+  Message copyWith({
+    Map<String, dynamic>? metadata,
+    PreviewData? previewData,
+    Status? status,
+  }) { 
+    return GroupExitMessage(
       authorId: authorId,
       id: id,
       metadata: metadata == null
